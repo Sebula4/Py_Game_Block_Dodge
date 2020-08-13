@@ -36,8 +36,9 @@ player_leniency = margin_of_error * player_size  # roughly 5px on each side
 # ---------------------------------------------------------------------------------------------------------------------------------------
 # --------enemy attributes---------------------------------------------------------------------------------------------------------------
 
-enemy_size = 50
-enemy_pos = [random.randint(0, (Width-enemy_size)), 0]
+enemy_size = [50, 50]
+enemy_pos = [random.randint(0, (Width-enemy_size[0])),
+             0, enemy_size[0], enemy_size[1]]
 enemy_list = [enemy_pos]
 enemy_speed = 10
 
@@ -85,15 +86,17 @@ def set_background(BACKGROUND_COLOR, score, score_counter):
 def drop_enemies(enemy_list):
     delay = random.random()
     if len(enemy_list) < 10 and delay < 0.1:
-        x_pos = random.randint(0, Width-enemy_size)
+        x_size = random.randint(25, 150)
+        y_size = random.randint(25, 250)
+        x_pos = random.randint(0, Width-x_size)
         y_pos = 0
-        enemy_list.append([x_pos, y_pos])
+        enemy_list.append([x_pos, y_pos, x_size, y_size])
 
 
 def draw_enemies(enemy_list):
-    for enemy_pos in enemy_list:
+    for enemy in enemy_list:
         pygame.draw.rect(
-            screen, BLUE, (enemy_pos[0], enemy_pos[1], enemy_size, enemy_size))
+            screen, BLUE, (enemy[0], enemy[1], enemy[2], enemy[3]))
 
 
 def update_enemy_positions(enemy_list, score):
@@ -107,22 +110,24 @@ def update_enemy_positions(enemy_list, score):
 
 
 def collision_check(enemy_list, player_pos):
-    for enemy_pos in enemy_list:
-        if detect_collision(enemy_pos, player_pos):
+    for enemy in enemy_list:
+        if detect_collision(player_pos, enemy):
             return True
     return False
 
 
-def detect_collision(player_pos, enemy_pos):
+def detect_collision(player_pos, enemy):
     p_x = player_pos[0]
     p_y = player_pos[1]
 
-    e_x = enemy_pos[0]
-    e_y = enemy_pos[1]
+    e_x = enemy[0]
+    e_y = enemy[1]
+    e_x_size = enemy[2]
+    e_y_size = enemy[3]
 
     # my code to check for colissions
-    if (e_x + enemy_size) >= (p_x + player_leniency) and e_x < (p_x + player_size - player_leniency):
-        if (e_y + enemy_size) >= (p_y + player_leniency) and e_y < (p_y + player_size - player_leniency):
+    if (e_x + e_x_size) >= (p_x + player_leniency) and e_x < (p_x + player_size - player_leniency):
+        if (e_y + e_y_size) >= (p_y + player_leniency) and e_y < (p_y + player_size - player_leniency):
             return True
 
     # video tutorial code to check for colisions
@@ -165,7 +170,6 @@ while not game_over:
         game_over = True
         break
     draw_enemies(enemy_list)
-
     enemy_speed = set_level(score, enemy_speed)
 
     # set the score
